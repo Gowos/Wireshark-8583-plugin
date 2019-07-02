@@ -1,22 +1,3 @@
-# wireshark plugin for 8583Ğ­Òé
-
-Ê¹ÓÃ·½·¨
-
-ĞŞ¸Ä C:\Program Files\Wireshark\init.lua ÎÄ¼ş
-ÔÚÎÄ¼şÄ©Î²Ìí¼ÓÒ»ĞĞ£º
-dofile("C:/.../lua/Iso8583.lua")
-
-Ğ­ÒéÃû£ºiso8583
-
-![ÉèÖÃ](./images/setting.jpeg "ÉèÖÃ")
-![±¨ÎÄ¼ÇÂ¼](./images/wireshark_ls.jpeg "±¨ÎÄ¼ÇÂ¼")
-![64Óò](./images/wireshark_field_64.jpeg "64Óò")
-![128Óò](./images/wireshark_field_128.jpeg "128Óò")
-![Ö§³ÖÈÕÖ¾µ÷ÊÔ](./images/debug.jpeg "Ö§³ÖÈÕÖ¾µ÷ÊÔ")
-
-ÊµÏÖ´úÂë
-
-```
 -- Wireshark Plugin for 8583, author: JackHao<north0808@qq.com>
 -- Api http://www.cse.sc.edu/~okeefe/tutorials/wireshark/wsluarm_modules.html
 
@@ -24,7 +5,7 @@ dofile("C:/.../lua/Iso8583.lua")
 -- local debug = require("debugger")
 -- require("mobdebug").start()
 
--- ÅäÖÃ²ÎÊı
+-- é…ç½®å‚æ•°
 -- do not modify this table
 local eDebugLevel = {
   Error = 0,-- Error
@@ -53,108 +34,148 @@ local eBitmapType =
     Unknow,
   }
 
--- Óò¶¨Òå
+-- åŸŸå®šä¹‰
 local eMapBitmap = {
-  [0]={"Î´ÖªÓò", "Unknow Bitmap", nil},
-  [1]={"Óò1 À©Õ¹Óò", "Bitmap Table", nil},
-  [2]={"Óò2 Ö÷ÕËºÅ", "Primary Account Number", "N..19(LLVAR)"},
-  [3]={"Óò3 ½»Ò×´¦ÀíÂë", "Transaction Processing Code", "N6"},
-  [4]={"Óò4 ½»Ò×½ğ¶î", "Amount Of Transactions", "N12"},
-  [11]={"Óò11 ÊÜ¿¨·½ÏµÍ³¸ú×ÙºÅ", "System Trace Audit Number", "N6"},
-  [12]={"Óò12 ÊÜ¿¨·½ËùÔÚµØÊ±¼ä", "Local Time Of Transaction", "N6"},
-  [13]={"Óò13 ÊÜ¿¨·½ËùÔÚµØÈÕÆÚ", "Local Date Of Transaction", "N4"},
-  [14]={"Óò14 ¿¨ÓĞĞ§ÆÚ", "Date Of Expired", "N4"},
-  [15]={"Óò15 ÇåËãÈÕÆÚ", "Date Of Settlement", "N4"},
-  [22]={"Óò22 ·şÎñµãÊäÈë·½Ê½Âë", "Point Of Service Entry Mode", "N3"},
-  [23]={"Óò23 ¿¨ĞòÁĞºÅ", "Card Sequence Number", "N3"},
-  [25]={"Óò25 ·şÎñµãÌõ¼şÂë", "Point Of Service Condition Mode", "N2"},
-  [26]={"Óò26 ·şÎñµãPIN»ñÈ¡Âë", "Point Of Service PIN Capture Code", "N2"},
-  [32]={"Óò32 ÊÜÀí»ú¹¹±êÊ¶Âë", "Acquiring Institution Identification Code", "N..11(LLVAR)"},
-  [35]={"Óò35 2´ÅµÀÊı¾İ", "Track 2 Data", "Z..37(LLVAR)"},
-  [36]={"Óò36 3´ÅµÀÊı¾İ", "Track 3 Data", "Z...104(LLLVAR)"},
-  [37]={"Óò37 ¼ìË÷²Î¿¼ºÅ", "Retrieval Reference Number", "AN12"},
-  [38]={"Óò38 ÊÚÈ¨±êÊ¶Ó¦´ğÂë", "Authorization Identification Response Code", "AN6"},
-  [39]={"Óò39 Ó¦´ğÂë", "Response Code", "AN2"},
-  [41]={"Óò41 ÊÜ¿¨»úÖÕ¶Ë±êÊ¶Âë", "Card Acceptor Terminal Identification", "ANS8"},
-  [42]={"Óò42 ÊÜ¿¨·½±êÊ¶Âë", "Card Acceptor Identification Code", "ANS15"},
-  [44]={"Óò44 ¸½¼ÓÏìÓ¦Êı¾İ", "Additional Response Data", "AN..25(LLVAR)"},
-  [48]={"Óò48 ¸½¼ÓÊı¾İ- Ë½ÓĞ", "Additional Data - Private", "N...322(LLLVAR)"},
-  [49]={"Óò49 ½»Ò×»õ±Ò´úÂë", "Currency Code Of Transaction", "AN3"},
-  [52]={"Óò52 ¸öÈË±êÊ¶ÂëÊı¾İ", "PIN Data", "B64"},
-  [53]={"Óò53 °²È«¿ØÖÆĞÅÏ¢", "Security Related Control Information ", "n16"},
-  [54]={"Óò54 Óà¶î", "Balanc Amount", "AN...020(LLLVAR)"},
-  [55]={"Óò55 IC¿¨Êı¾İÓò", "Intergrated Circuit Card System Related Data", "ANS...255(LLLVAR)"},
-  [58]={"Óò58 PBOCµç×ÓÇ®°ü±ê×¼µÄ½»Ò×ĞÅÏ¢£¨PBOC_ELECTRONIC_DATA£©", "ans...100(LLLVAR)"},
-  [60]={"Óò60 ×Ô¶¨ÒåÓò", "Reserved Private", "N...17(LLLVAR)"},
-  [61]={"Óò61 Ô­Ê¼ĞÅÏ¢Óò", "Original Message", "N...029(LLLVAR)"},
-  [62]={"Óò62 ×Ô¶¨ÒåÓò", "Reserved Private", "ANS...512(LLLVAR)"},
-  [63]={"Óò63 ×Ô¶¨ÒåÓò", "Reserved Private", "ANS...163(LLLVAR)"},
-  [64]={"Óò64 ±¨ÎÄ¼ø±ğÂë", "Message Authentication Code", "B64"},
+  [0]={"æœªçŸ¥åŸŸ", "Unknow Bitmap", nil},
+  [1]={"åŸŸ1 æ‰©å±•åŸŸ", "Bitmap Table", nil},
+  [2]={"åŸŸ2 ä¸»è´¦å·", "Primary Account Number", "N..19(LLVAR)"},
+  [3]={"åŸŸ3 äº¤æ˜“å¤„ç†ç ", "Transaction Processing Code", "N6"},
+  [4]={"åŸŸ4 äº¤æ˜“é‡‘é¢", "Amount Of Transactions", "N12"},
+  [11]={"åŸŸ11 å—å¡æ–¹ç³»ç»Ÿè·Ÿè¸ªå·", "System Trace Audit Number", "N6"},
+  [12]={"åŸŸ12 å—å¡æ–¹æ‰€åœ¨åœ°æ—¶é—´", "Local Time Of Transaction", "N6"},
+  [13]={"åŸŸ13 å—å¡æ–¹æ‰€åœ¨åœ°æ—¥æœŸ", "Local Date Of Transaction", "N4"},
+  [14]={"åŸŸ14 å¡æœ‰æ•ˆæœŸ", "Date Of Expired", "N4"},
+  [15]={"åŸŸ15 æ¸…ç®—æ—¥æœŸ", "Date Of Settlement", "N4"},
+  [22]={"åŸŸ22 æœåŠ¡ç‚¹è¾“å…¥æ–¹å¼ç ", "Point Of Service Entry Mode", "N3"},
+  [23]={"åŸŸ23 å¡åºåˆ—å·", "Card Sequence Number", "N3"},
+  [25]={"åŸŸ25 æœåŠ¡ç‚¹æ¡ä»¶ç ", "Point Of Service Condition Mode", "N2"},
+  [26]={"åŸŸ26 æœåŠ¡ç‚¹PINè·å–ç ", "Point Of Service PIN Capture Code", "N2"},
+  [32]={"åŸŸ32 å—ç†æœºæ„æ ‡è¯†ç ", "Acquiring Institution Identification Code", "N..11(LLVAR)"},
+  [35]={"åŸŸ35 2ç£é“æ•°æ®", "Track 2 Data", "Z..37(LLVAR)"},
+  [36]={"åŸŸ36 3ç£é“æ•°æ®", "Track 3 Data", "Z...104(LLLVAR)"},
+  [37]={"åŸŸ37 æ£€ç´¢å‚è€ƒå·", "Retrieval Reference Number", "AN12"},
+  [38]={"åŸŸ38 æˆæƒæ ‡è¯†åº”ç­”ç ", "Authorization Identification Response Code", "AN6"},
+  [39]={"åŸŸ39 åº”ç­”ç ", "Response Code", "AN2"},
+  [41]={"åŸŸ41 å—å¡æœºç»ˆç«¯æ ‡è¯†ç ", "Card Acceptor Terminal Identification", "ANS8"},
+  [42]={"åŸŸ42 å—å¡æ–¹æ ‡è¯†ç ", "Card Acceptor Identification Code", "ANS15"},
+  [44]={"åŸŸ44 é™„åŠ å“åº”æ•°æ®", "Additional Response Data", "AN..25(LLVAR)"},
+  [48]={"åŸŸ48 é™„åŠ æ•°æ®- ç§æœ‰", "Additional Data - Private", "N...322(LLLVAR)"},
+  [49]={"åŸŸ49 äº¤æ˜“è´§å¸ä»£ç ", "Currency Code Of Transaction", "AN3"},
+  [52]={"åŸŸ52 ä¸ªäººæ ‡è¯†ç æ•°æ®", "PIN Data", "B64"},
+  [53]={"åŸŸ53 å®‰å…¨æ§åˆ¶ä¿¡æ¯", "Security Related Control Information ", "n16"},
+  [54]={"åŸŸ54 ä½™é¢", "Balanc Amount", "AN...020(LLLVAR)"},
+  [55]={"åŸŸ55 ICå¡æ•°æ®åŸŸ", "Intergrated Circuit Card System Related Data", "ANS...255(LLLVAR)"},
+  [58]={"åŸŸ58 PBOCç”µå­é’±åŒ…æ ‡å‡†çš„äº¤æ˜“ä¿¡æ¯ï¼ˆPBOC_ELECTRONIC_DATAï¼‰", "ans...100(LLLVAR)"},
+  [60]={"åŸŸ60 è‡ªå®šä¹‰åŸŸ", "Reserved Private", "N...17(LLLVAR)"},
+  [61]={"åŸŸ61 åŸå§‹ä¿¡æ¯åŸŸ", "Original Message", "N...029(LLLVAR)"},
+  [62]={"åŸŸ62 è‡ªå®šä¹‰åŸŸ", "Reserved Private", "ANS...512(LLLVAR)"},
+  [63]={"åŸŸ63 è‡ªå®šä¹‰åŸŸ", "Reserved Private", "ANS...163(LLLVAR)"},
+  [64]={"åŸŸ64 æŠ¥æ–‡é‰´åˆ«ç ", "Message Authentication Code", "B64"},
+  [65]={"åŸŸ65 å·¡æ£€å·¥ä½œå†…å®¹æŠ¥å‘Šï¼Œå·¥ä½œå†…å®¹ï¼ˆ10ä½ï¼‰æ•°å­—å­—ç¬¦ï¼Œæœºå…·çŠ¶æ€ï¼ˆ1ä½æ•°å­—å­—ç¬¦ï¼‰", "Check Content", "N11"},
+  [66]={"åŸŸ66 ä½¿ç”¨ä¼˜æƒ åˆ¸åˆ—è¡¨", "Member Coupons List", "ANS...999(LLLVAR)"},
+  [67]={"åŸŸ67 å¯ç”¨ä¼˜æƒ åˆ¸å‰©ä½™åˆ—è¡¨", "Merchant Coupons List", "B...999(LLLVAR)"},
+  [68]={"åŸŸ68 ä¼šå‘˜ç¼–å·ï¼Œç”¨ä½œä¼šå‘˜çš„æ ‡è¯†ã€‚æœ¬ç³»ç»Ÿä½¿ç”¨æ‰‹æœºå·ä½œä¸ºä¼šå‘˜ç¼–å·", "Member ID", "N..64(LLVAR)"},
+  [71]={"åŸŸ71 ä¼šå‘˜ç¼–å·ï¼Œç”¨ä½œä¼šå‘˜çš„æ ‡è¯†ã€‚æœ¬ç³»ç»Ÿä½¿ç”¨æ‰‹æœºå·ä½œä¸ºä¼šå‘˜ç¼–å·", "Member ID", "N11"},
+  [72]={"åŸŸ72 ä¼šå‘˜çº§åˆ«ç¼–å·", "Member Lever Number", "N1"},
+  [73]={"åŸŸ73 ä¼šå‘˜å¯ä»¥äº«æœ‰çš„æŠ˜æ‰£", "Member Discount", "N4"},
+  [74]={"åŸŸ74 ä½¿ç”¨ä¼˜æƒ åˆ¸åˆ—è¡¨", "Member Coupons List", "ANS...999(LLLVAR)"},
+  [75]={"åŸŸ75 å¯ç”¨ä¼˜æƒ åˆ¸å‰©ä½™åˆ—è¡¨", "Merchant Coupons List", "A...999(LLLVAR)"},
+  [76]={"åŸŸ76 ä¼šå‘˜ç§¯åˆ†ä½™é¢", "MemberPoints Balance", "N10"},
+  [77]={"åŸŸ77 åˆ¸å·", "Coupons ID", "N..30(LLVAR)"},
+  [78]={"åŸŸ78 é€šè®¯ä¿¡æ¯", "Term Comm Info", "N..30(LLVAR)"},
+  [79]={"åŸŸ79 åŸäº¤æ˜“ç±»å‹ç ", "Old Trans Type", "N2"},
+  [80]={"åŸŸ80 ä¼šå‘˜æ¶ˆè´¹ç°é‡‘é¢", "Member Consume Cash", "N12"},
+  [81]={"åŸŸ81 ä¼šå‘˜æ¶ˆè´¹ç§¯åˆ†é¢", "Member Consume Points", "N10"},
+  [82]={"åŸŸ82 åº”ç­”ä¿¡æ¯", "Response Info", "ANS..48(LLVAR)"},
+  [83]={"åŸŸ83 ç»ˆç«¯æ“ä½œå‘˜å·", "Terminal OperatorNo", "N3"},
+  [84]={"åŸŸ84 æŠ¥æ–‡æ ¼å¼ä¿¡æ¯", "Packet Info", "B..20(LLVAR)"},
+  [88]={"åŸŸ88 å•†æˆ·ç®€ç§°", "Merchant Name", "ANS..40(LLVAR)"},
+  [89]={"åŸŸ89 ä¼šå‘˜å¯ç”¨ç§¯åˆ†ä½™é¢", "MemberPointsAvailable Balance", "N10"},
+  [95]={"åŸŸ95 æŸ¥è¯¢ç»“æœæ‰¹å·", "QueryNo", "N3"},
+  [96]={"åŸŸ96 é€€è´§ç±»æŸ¥è¯¢ç»“æœ", "QueryResult", "ANS...999(LLLVAR)"},
+  [104]={"åŸŸ104 è®¾å¤‡åºåˆ—å·", "Device Serial Number", "ANS16"},
+  [105]={"åŸŸ105 ç»ˆç«¯ä¸šåŠ¡å‚æ•°", "Terminal Function PARA", "ANS...400(LLLVAR)"},
+  [106]={"åŸŸ106 ä¸šåŠ¡è§„åˆ™ç¼–å·", "Rules Number", "N2"},
+  [107]={"åŸŸ107 ä¸šåŠ¡è§„åˆ™ä¿¡æ¯", "Rules Info", "ANS..16(LLVAR)"},
+  [108]={"åŸŸ108 æŠ¥æ–‡åºå·", "Packet Serial Number", "N6"},
+  [109]={"åŸŸ109 æŠ¥æ–‡åç»­æ ‡è¯†", "Packet Flag", "N1"},
+  [110]={"åŸŸ110 ä¼šå‘˜æŠ˜æ‰£è®¡ç®—æ ‡è¯†", "Member Discount Flag", "N1"},
+  [111]={"åŸŸ111 ä¿¡æ¯åŒæ­¥å‚æ•°", "TMS Params Sync", "ANS..20(LLVAR)"},
+  [112]={"åŸŸ112 ä¼šå‘˜çº§åˆ«ä¿¡æ¯", "Member Level Info", "ANS..99(LLVAR)"},
+  [113]={"åŸŸ113 ç»ˆç«¯åº”ç”¨ç¼–å·", "Application Number", "ANS6"},
+  [114]={"åŸŸ114 ç»ˆç«¯åº”ç”¨ç‰ˆæœ¬å·", "Application Version", "ANS6"},
+  [115]={"åŸŸ115 è‡ªå®šä¹‰å‚æ•°", "Self PARA", "ANS..256(LLLVAR)"},
+  [116]={"åŸŸ116 POSå¥åº·åº¦ä¿¡æ¯", "Healthy Info", "ANS...256(LLLVAR)"},
+  [117]={"åŸŸ117 ç»ˆç«¯åº”ç”¨å‚æ•°", "Terminal App PARA", "ANS...512(LLLVAR)"},
+  [118]={"åŸŸ118 POSæŒå¡äººå¹¿å‘Šä¿¡æ¯", "Cardholder Advertising Info", "ANS...999(LLLVAR)"},
+  [119]={"åŸŸ119 POSå•†æˆ·å¹¿å‘Šä¿¡æ¯", "Merchant Advertising Info", "ANS...999(LLLVAR)"},
+  [120]={"åŸŸ120 POSæœ€æ–°åŠ¨æ€", "Update Situation", "ANS...999(LLLVAR)"},
+  [128]={"åŸŸ128 BITMAPä¸º128ä½æ—¶çš„MAC", "128 Bitmap's Mac", "B64"},
 }
 
--- ÏûÏ¢ÀàĞÍ
+-- æ¶ˆæ¯ç±»å‹
 local eMapMessageType = {
   [100]=[[
-¡ª¡ª 0100/0110ÊÚÈ¨ÀàÇëÇó/Ó¦´ğÏûÏ¢£º
-¡ñ Ô¤ÊÚÈ¨ÇëÇó/Ó¦´ğ¡£
-¡ñ Ô¤ÊÚÈ¨³·ÏúÇëÇó/Ó¦´ğ¡£
-¡ñ ´ÅÌõ¿¨ÏÖ½ğ³äÖµÕË»§ÑéÖ¤ÇëÇó/Ó¦´ğ¡£
+â€”â€” 0100/0110æˆæƒç±»è¯·æ±‚/åº”ç­”æ¶ˆæ¯ï¼š
+â— é¢„æˆæƒè¯·æ±‚/åº”ç­”ã€‚
+â— é¢„æˆæƒæ’¤é”€è¯·æ±‚/åº”ç­”ã€‚
+â— ç£æ¡å¡ç°é‡‘å……å€¼è´¦æˆ·éªŒè¯è¯·æ±‚/åº”ç­”ã€‚
 ]],
   [200]=[[
-¡ª¡ª 0200/0210½ğÈÚÀàÇëÇó/Ó¦´ğÏûÏ¢£º
-¡ñ ²éÑ¯ÇëÇó/Ó¦´ğ¡£
-¡ñ Ïû·ÑÇëÇó/Ó¦´ğ¡£
-¡ñ Ïû·Ñ³·ÏúÇëÇó/Ó¦´ğ¡£
-¡ñ Ô¤ÊÚÈ¨Íê³É£¨ÇëÇó£©ÇëÇó/Ó¦´ğ¡£
-¡ñ Ô¤ÊÚÈ¨Íê³É³·ÏúÇëÇó/Ó¦´ğ¡£
-¡ñ µç×ÓÏÖ½ğÍÑ»úÏû·ÑÇëÇó/Ó¦´ğ¡£
-¡ñ ·ÖÆÚ¸¶¿î½»Ò×ÇëÇó/Ó¦´ğ¡£
-¡ñ ·ÖÆÚ¸¶¿î½»Ò×³·ÏúÇëÇó/Ó¦´ğ¡£
-¡ñ »ùÓÚPBOCµç×ÓÇ®°ü/µç×ÓÏÖ½ğµÄICÈ¦´æÀà½»Ò×ÇëÇó/Ó¦´ğ¡£
-¡ñ ´ÅÌõ¿¨ÏÖ½ğ³äÖµÇëÇó/Ó¦´ğ¡£
-¡ñ ´ÅÌõ¿¨ÕË»§³äÖµÇëÇó/Ó¦´ğ¡£
+â€”â€” 0200/0210é‡‘èç±»è¯·æ±‚/åº”ç­”æ¶ˆæ¯ï¼š
+â— æŸ¥è¯¢è¯·æ±‚/åº”ç­”ã€‚
+â— æ¶ˆè´¹è¯·æ±‚/åº”ç­”ã€‚
+â— æ¶ˆè´¹æ’¤é”€è¯·æ±‚/åº”ç­”ã€‚
+â— é¢„æˆæƒå®Œæˆï¼ˆè¯·æ±‚ï¼‰è¯·æ±‚/åº”ç­”ã€‚
+â— é¢„æˆæƒå®Œæˆæ’¤é”€è¯·æ±‚/åº”ç­”ã€‚
+â— ç”µå­ç°é‡‘è„±æœºæ¶ˆè´¹è¯·æ±‚/åº”ç­”ã€‚
+â— åˆ†æœŸä»˜æ¬¾äº¤æ˜“è¯·æ±‚/åº”ç­”ã€‚
+â— åˆ†æœŸä»˜æ¬¾äº¤æ˜“æ’¤é”€è¯·æ±‚/åº”ç­”ã€‚
+â— åŸºäºPBOCç”µå­é’±åŒ…/ç”µå­ç°é‡‘çš„ICåœˆå­˜ç±»äº¤æ˜“è¯·æ±‚/åº”ç­”ã€‚
+â— ç£æ¡å¡ç°é‡‘å……å€¼è¯·æ±‚/åº”ç­”ã€‚
+â— ç£æ¡å¡è´¦æˆ·å……å€¼è¯·æ±‚/åº”ç­”ã€‚
 ]],
   [220]=[[
-¡ª¡ª 0220/0230½ğÈÚÍ¨ÖªÀàÇëÇó/Ó¦´ğÏûÏ¢£º
-¡ñ ÍË»õÍ¨ÖªÇëÇó/Ó¦´ğ¡£
-¡ñ ÀëÏß½áËãÍ¨ÖªÇëÇó/Ó¦´ğ¡£
-¡ñ ½áËãµ÷ÕûÍ¨ÖªÇëÇó/Ó¦´ğ¡£
-¡ñ Ô¤ÊÚÈ¨Íê³É£¨Í¨Öª£©ÇëÇó/Ó¦´ğ¡£
-¡ñ ´ÅÌõ¿¨ÏÖ½ğ³äÖµÈ·ÈÏÍ¨ÖªÇëÇó/Ó¦´ğ¡£
+â€”â€” 0220/0230é‡‘èé€šçŸ¥ç±»è¯·æ±‚/åº”ç­”æ¶ˆæ¯ï¼š
+â— é€€è´§é€šçŸ¥è¯·æ±‚/åº”ç­”ã€‚
+â— ç¦»çº¿ç»“ç®—é€šçŸ¥è¯·æ±‚/åº”ç­”ã€‚
+â— ç»“ç®—è°ƒæ•´é€šçŸ¥è¯·æ±‚/åº”ç­”ã€‚
+â— é¢„æˆæƒå®Œæˆï¼ˆé€šçŸ¥ï¼‰è¯·æ±‚/åº”ç­”ã€‚
+â— ç£æ¡å¡ç°é‡‘å……å€¼ç¡®è®¤é€šçŸ¥è¯·æ±‚/åº”ç­”ã€‚
 ]],
   [320]=[[
-¡ª¡ª 0320/0330 ÅúÉÏËÍÏûÏ¢ÇëÇó/Ó¦´ğ£º
-¡ñ ÖÕ¶ËÅúÉÏËÍÇëÇó/Ó¦´ğ¡£
+â€”â€” 0320/0330 æ‰¹ä¸Šé€æ¶ˆæ¯è¯·æ±‚/åº”ç­”ï¼š
+â— ç»ˆç«¯æ‰¹ä¸Šé€è¯·æ±‚/åº”ç­”ã€‚
 ]],
   [400]=[[
-¡ª¡ª 0400/0410³åÕıÀàÏûÏ¢ÇëÇó/Ó¦´ğ£º
-¡ñ Ô¤ÊÚÈ¨³åÕıÇëÇó/Ó¦´ğ¡£
-¡ñ Ô¤ÊÚÈ¨³·Ïú³åÕıÇëÇó/Ó¦´ğ¡£
-¡ñ Ïû·Ñ³åÕıÇëÇó/Ó¦´ğ¡£
-¡ñ Ïû·Ñ³·Ïú³åÕıÇëÇó/Ó¦´ğ¡£
-¡ñ Ô¤ÊÚÈ¨Íê³É£¨ÇëÇó£©³åÕıÇëÇó/Ó¦´ğ¡£
-¡ñ Ô¤ÊÚÈ¨Íê³É³·Ïú³åÕıÇëÇó/Ó¦´ğ¡£
-¡ñ »ùÓÚPBOCµç×ÓÇ®°ü/µç×ÓÏÖ½ğµÄICÈ¦´æÀà½»Ò×³åÕıÇëÇó/Ó¦´ğ
+â€”â€” 0400/0410å†²æ­£ç±»æ¶ˆæ¯è¯·æ±‚/åº”ç­”ï¼š
+â— é¢„æˆæƒå†²æ­£è¯·æ±‚/åº”ç­”ã€‚
+â— é¢„æˆæƒæ’¤é”€å†²æ­£è¯·æ±‚/åº”ç­”ã€‚
+â— æ¶ˆè´¹å†²æ­£è¯·æ±‚/åº”ç­”ã€‚
+â— æ¶ˆè´¹æ’¤é”€å†²æ­£è¯·æ±‚/åº”ç­”ã€‚
+â— é¢„æˆæƒå®Œæˆï¼ˆè¯·æ±‚ï¼‰å†²æ­£è¯·æ±‚/åº”ç­”ã€‚
+â— é¢„æˆæƒå®Œæˆæ’¤é”€å†²æ­£è¯·æ±‚/åº”ç­”ã€‚
+â— åŸºäºPBOCç”µå­é’±åŒ…/ç”µå­ç°é‡‘çš„ICåœˆå­˜ç±»äº¤æ˜“å†²æ­£è¯·æ±‚/åº”ç­”
 ]],
   [500]=[[
-¡ª¡ª 0500/0510¶ÔÕËÀàÏûÏ¢ÇëÇó/Ó¦´ğ£º
-¡ñ ÖÕ¶ËÅú½áËãÇëÇó/Ó¦´ğ¡£
+â€”â€” 0500/0510å¯¹è´¦ç±»æ¶ˆæ¯è¯·æ±‚/åº”ç­”ï¼š
+â— ç»ˆç«¯æ‰¹ç»“ç®—è¯·æ±‚/åº”ç­”ã€‚
 ]],
   [620]=[[
-¡ª¡ª 0620/0630»ùÓÚPBOC½è/´û¼Ç¿¨±ê×¼µÄIC¿¨½Å±¾´¦Àí½á¹ûÍ¨ÖªÏûÏ¢ÇëÇó/Ó¦´ğ£º
-¡ñ »ùÓÚPBOC½è/´û¼Ç¿¨±ê×¼µÄIC¿¨½Å±¾´¦Àí½á¹ûÍ¨ÖªÇëÇó/Ó¦´ğ¡£
+â€”â€” 0620/0630åŸºäºPBOCå€Ÿ/è´·è®°å¡æ ‡å‡†çš„ICå¡è„šæœ¬å¤„ç†ç»“æœé€šçŸ¥æ¶ˆæ¯è¯·æ±‚/åº”ç­”ï¼š
+â— åŸºäºPBOCå€Ÿ/è´·è®°å¡æ ‡å‡†çš„ICå¡è„šæœ¬å¤„ç†ç»“æœé€šçŸ¥è¯·æ±‚/åº”ç­”ã€‚
 ]],
   [800]=[[
-¡ª¡ª 0800/0810ÍøÂçÒµÎñ¹ÜÀíÀàÏûÏ¢ÇëÇó/Ó¦´ğ£º
-¡ñ ÖÕ¶ËÇ©µ½ÇëÇó/Ó¦´ğ¡£
-¡ñ ÖÕ¶Ë²ÎÊı´«µİÇëÇó/Ó¦´ğ¡£
+â€”â€” 0800/0810ç½‘ç»œä¸šåŠ¡ç®¡ç†ç±»æ¶ˆæ¯è¯·æ±‚/åº”ç­”ï¼š
+â— ç»ˆç«¯ç­¾åˆ°è¯·æ±‚/åº”ç­”ã€‚
+â— ç»ˆç«¯å‚æ•°ä¼ é€’è¯·æ±‚/åº”ç­”ã€‚
 ]],
   [820]=[[
-¡ª¡ª 0820/0830ÍøÂçÒµÎñ¹ÜÀíÀàÏûÏ¢ÇëÇó/Ó¦´ğ£º
-¡ñ ÖÕ¶ËÇ©ÍËÇëÇó/Ó¦´ğ¡£
-¡ñ ÖÕ¶Ë»ØÏì²âÊÔÇëÇó/Ó¦´ğ¡£
-¡ñ ÖÕ¶Ë×´Ì¬ÉÏËÍÇëÇó/Ó¦´ğ¡£
-¡ñ ÊÕÒøÔ±»ı·ÖÇ©µ½ÇëÇó/Ó¦´ğ¡£
+â€”â€” 0820/0830ç½‘ç»œä¸šåŠ¡ç®¡ç†ç±»æ¶ˆæ¯è¯·æ±‚/åº”ç­”ï¼š
+â— ç»ˆç«¯ç­¾é€€è¯·æ±‚/åº”ç­”ã€‚
+â— ç»ˆç«¯å›å“æµ‹è¯•è¯·æ±‚/åº”ç­”ã€‚
+â— ç»ˆç«¯çŠ¶æ€ä¸Šé€è¯·æ±‚/åº”ç­”ã€‚
+â— æ”¶é“¶å‘˜ç§¯åˆ†ç­¾åˆ°è¯·æ±‚/åº”ç­”ã€‚
 ]],
 }
 
@@ -172,7 +193,7 @@ local eSettings =
     protoInfo       = "JackHao<north0808@qq.com>'s Plugin For ISO8583",
   }
 
--- ÉèÖÃÈÕÖ¾·½·¨
+-- è®¾ç½®æ—¥å¿—æ–¹æ³•
 local logError = function() end
 local logWarn = function() end
 local logInfo = function() end
@@ -184,7 +205,7 @@ do
     if not gui_enabled() or not eSettings.log_gui_enabled then
       return
     else
-    -- ´ò¿ªÏÂÃæµÄ¿ª¹Ø½ûÓÃLog´°¿Ú
+    -- æ‰“å¼€ä¸‹é¢çš„å¼€å…³ç¦ç”¨Logçª—å£
     -- return
     end
 
@@ -280,7 +301,7 @@ assert(ProtoExpert.new, "Wireshark does not have the ProtoExpert class, so it's 
 ------------------------------------------------------------------------------
 -- creates a Proto object, but doesn't register it yet
 local proto = Proto(eSettings.protoName, eSettings.protoInfo) -- , base.DEC
--- Ìí¼Ó×Ö¶Î
+-- æ·»åŠ å­—æ®µ
 do
   -- length
   local pf_totalLen                   = ProtoField.new   ("Length", eSettings.protoName..".total_len",              ftypes.UINT16, nil, base.HEX) --2 byte
@@ -343,10 +364,10 @@ local function MyHex2Str(str)
 end
 
 ----------------------------------------------------------------------------
--- ¸ù¾İ¹«Ê½¼ÆËã³¤¶È(bytes)
--- buf      : µ±Ç°ÕıÔÚ´¦ÀíµÄÓòbuf
--- rule     : ¼ÆËãÓòµÄÖµµÄ¹«Ê½£¨ÈçN2£©
--- postion  : ÓòĞòºÅ£¨1-128£©
+-- æ ¹æ®å…¬å¼è®¡ç®—é•¿åº¦(bytes)
+-- buf      : å½“å‰æ­£åœ¨å¤„ç†çš„åŸŸbuf
+-- rule     : è®¡ç®—åŸŸçš„å€¼çš„å…¬å¼ï¼ˆå¦‚N2ï¼‰
+-- postion  : åŸŸåºå·ï¼ˆ1-128ï¼‰
 ----------------------------------------------------------------------------
 local function MyCalcBitmapPostLen(buf, rule, postion)
   -- [[MyCalcBitmapPostLen Start]]
@@ -357,53 +378,53 @@ local function MyCalcBitmapPostLen(buf, rule, postion)
     logDebug(TAG.."postion(1-128) = "..postion..", rule = nil, buf[IN "..buf:len().."] = "..buf)
   end
   --[[
-    Êı¾İÔªÀàĞÍÈçÏÂËùÁĞ£º
- ¡ª¡ª A×ÖÄ¸Ïò×ó¿¿£¬ÓÒ²¿¶àÓà²¿·ÖÌî¿Õ¸ñ¡£
- ¡ª¡ª AN×ÖÄ¸ºÍ/»òÊı×Ö£¬×ó¿¿£¬ÓÒ²¿¶àÓà²¿·ÖÌî¿Õ¸ñ¡£
- ¡ª¡ª ANS×ÖÄ¸¡¢Êı×ÖºÍ/»òÌØÊâ·ûºÅ£¬×ó¿¿£¬ÓÒ²¿¶àÓà²¿·ÖÌî¿Õ¸ñ¡£
- ¡ª¡ª AS×ÖÄ¸ºÍ/»òÌØÊâ·ûºÅ£¬×ó¿¿£¬ÓÒ²¿¶àÓà²¿·ÖÌî¿Õ¸ñ¡£
- ¡ª¡ª B¶ş½øÖÆbitÎ»¡£
- ¡ª¡ª DDÈÕ¡£
- ¡ª¡ª hhÊ±¡£
- ¡ª¡ª LL¿É±ä³¤ÓòµÄ³¤¶ÈÖµ(¶şÎ»Êı)¡£
- ¡ª¡ª LLL ¿É±ä³¤ÓòµÄ³¤¶ÈÖµ(ÈıÎ»Êı)¡£
- ¡ª¡ª MM ÔÂ¡£
- ¡ª¡ª mm ·Ö¡£
- ¡ª¡ª NÊıÖµ£¬ÓÒ¿¿£¬Ê×Î»ÓĞĞ§Êı×ÖÇ°³äÁã¡£Èô±íÊ¾½ğ¶î£¬Ôò×îÓÒ¶şÎ»Îª½Ç·Ö¡£
- ¡ª¡ª SÌØÊâ·ûºÅ¡£
- ¡ª¡ª ssÃë¡£
- ¡ª¡ª VAR¿É±ä³¤Óò¡£
- ¡ª¡ª X½è´û·ûºÅ£¬ÔÚÊıÖµÖ®Ç°£¬D±íÊ¾½è£¬C±íÊ¾´û¡£
- ¡ª¡ª YYÄê¡£
- ¡ª¡ª Z ÓÉISO 7811ºÍISO 7813ÖÆ¶¨µÄ´ÅÌõ¿¨µÚ¶ş¡¢Èı´ÅµÀµÄÊı¾İÀàĞÍ¡£
- ¡ª¡ª CNBCDÑ¹Ëõ±àÂëÊıÖµ¡£
+    æ•°æ®å…ƒç±»å‹å¦‚ä¸‹æ‰€åˆ—ï¼š
+ â€”â€” Aå­—æ¯å‘å·¦é ï¼Œå³éƒ¨å¤šä½™éƒ¨åˆ†å¡«ç©ºæ ¼ã€‚
+ â€”â€” ANå­—æ¯å’Œ/æˆ–æ•°å­—ï¼Œå·¦é ï¼Œå³éƒ¨å¤šä½™éƒ¨åˆ†å¡«ç©ºæ ¼ã€‚
+ â€”â€” ANSå­—æ¯ã€æ•°å­—å’Œ/æˆ–ç‰¹æ®Šç¬¦å·ï¼Œå·¦é ï¼Œå³éƒ¨å¤šä½™éƒ¨åˆ†å¡«ç©ºæ ¼ã€‚
+ â€”â€” ASå­—æ¯å’Œ/æˆ–ç‰¹æ®Šç¬¦å·ï¼Œå·¦é ï¼Œå³éƒ¨å¤šä½™éƒ¨åˆ†å¡«ç©ºæ ¼ã€‚
+ â€”â€” BäºŒè¿›åˆ¶bitä½ã€‚
+ â€”â€” DDæ—¥ã€‚
+ â€”â€” hhæ—¶ã€‚
+ â€”â€” LLå¯å˜é•¿åŸŸçš„é•¿åº¦å€¼(äºŒä½æ•°)ã€‚
+ â€”â€” LLL å¯å˜é•¿åŸŸçš„é•¿åº¦å€¼(ä¸‰ä½æ•°)ã€‚
+ â€”â€” MM æœˆã€‚
+ â€”â€” mm åˆ†ã€‚
+ â€”â€” Næ•°å€¼ï¼Œå³é ï¼Œé¦–ä½æœ‰æ•ˆæ•°å­—å‰å……é›¶ã€‚è‹¥è¡¨ç¤ºé‡‘é¢ï¼Œåˆ™æœ€å³äºŒä½ä¸ºè§’åˆ†ã€‚
+ â€”â€” Sç‰¹æ®Šç¬¦å·ã€‚
+ â€”â€” ssç§’ã€‚
+ â€”â€” VARå¯å˜é•¿åŸŸã€‚
+ â€”â€” Xå€Ÿè´·ç¬¦å·ï¼Œåœ¨æ•°å€¼ä¹‹å‰ï¼ŒDè¡¨ç¤ºå€Ÿï¼ŒCè¡¨ç¤ºè´·ã€‚
+ â€”â€” YYå¹´ã€‚
+ â€”â€” Z ç”±ISO 7811å’ŒISO 7813åˆ¶å®šçš„ç£æ¡å¡ç¬¬äºŒã€ä¸‰ç£é“çš„æ•°æ®ç±»å‹ã€‚
+ â€”â€” CNBCDå‹ç¼©ç¼–ç æ•°å€¼ã€‚
 
- ·ûºÅ¶¨Òå
-¡ª¡ª MÇ¿ÖÆÓò(Mandatory)£¬´ËÓòÔÚ¸ÃÏûÏ¢ÖĞ±ØĞë³öÏÖ·ñÔò½«±»ÈÏÎªÏûÏ¢¸ñÊ½³ö´í¡£
-¡ª¡ª CÌõ¼şÓò(Conditional)£¬´ËÓòÔÚÒ»¶¨Ìõ¼şÏÂ³öÏÖÔÚ¸ÃÏûÏ¢ÖĞ£¬¾ßÌåµÄÌõ¼şÇë²Î¿¼±¸×¢ÖĞµÄËµÃ÷¡£
-¡ª¡ª OÑ¡ÓÃÓò(Optional)£¬´ËÓòÔÚ¸ÃÏûÏ¢ÖĞÓÉ·¢ËÍ·½×ÔÑ¡¡£
-¡ª¡ª Space´ËÓòÔÚ¸ÃÖÖÏûÏ¢ÖĞ²»³öÏÖ¡£
-¡ª¡ª A ×ÖÄ¸a£­z
-¡ª¡ª n Êı×Ö0£­9
-¡ª¡ª s ÌØÊâ×Ö·û
-¡ª¡ª an ×ÖÄ¸ºÍÊı×Ö×Ö·û
-¡ª¡ª ans ×ÖÄ¸¡¢Êı×ÖºÍÌØÊâ×Ö·û
-¡ª¡ª MM ÔÂ
-¡ª¡ª DD ÈÕ
-¡ª¡ª YY Äê
-¡ª¡ª hh Ğ¡Ê±
-¡ª¡ª mm ·Ö
-¡ª¡ª ss Ãë
-¡ª¡ª LL ÔÊĞíµÄ×î´ó³¤¶ÈÎª99
-¡ª¡ª LLL ÔÊĞíµÄ×î´ó³¤¶ÈÎª999
-¡ª¡ª VAR ¿É±ä³¤¶ÈÓò
-¡ª¡ª b Êı¾İµÄ¶ş½øÖÆ±íÊ¾£¬ºó¸úÊı×Ö±íÊ¾Î»£¨bit£©µÄ¸öÊı
-¡ª¡ª B ÓÃÓÚ±íÊ¾±ä³¤µÄ¶ş½øÖÆÊı£¬ºó¸úÊı×Ö±íÊ¾¶ş½øÖÆÊı¾İËùÕ¼×Ö½Ú£¨Byte£©µÄ¸öÊı
-¡ª¡ª z °´GB/T 15120ºÍGB/T 17552µÄ2¡¢3´ÅµÀ±àÂë
-¡ª¡ª cn BCDÑ¹Ëõ±àÂëÊıÖµ
+ ç¬¦å·å®šä¹‰
+â€”â€” Må¼ºåˆ¶åŸŸ(Mandatory)ï¼Œæ­¤åŸŸåœ¨è¯¥æ¶ˆæ¯ä¸­å¿…é¡»å‡ºç°å¦åˆ™å°†è¢«è®¤ä¸ºæ¶ˆæ¯æ ¼å¼å‡ºé”™ã€‚
+â€”â€” Cæ¡ä»¶åŸŸ(Conditional)ï¼Œæ­¤åŸŸåœ¨ä¸€å®šæ¡ä»¶ä¸‹å‡ºç°åœ¨è¯¥æ¶ˆæ¯ä¸­ï¼Œå…·ä½“çš„æ¡ä»¶è¯·å‚è€ƒå¤‡æ³¨ä¸­çš„è¯´æ˜ã€‚
+â€”â€” Oé€‰ç”¨åŸŸ(Optional)ï¼Œæ­¤åŸŸåœ¨è¯¥æ¶ˆæ¯ä¸­ç”±å‘é€æ–¹è‡ªé€‰ã€‚
+â€”â€” Spaceæ­¤åŸŸåœ¨è¯¥ç§æ¶ˆæ¯ä¸­ä¸å‡ºç°ã€‚
+â€”â€” A å­—æ¯aï¼z
+â€”â€” n æ•°å­—0ï¼9
+â€”â€” s ç‰¹æ®Šå­—ç¬¦
+â€”â€” an å­—æ¯å’Œæ•°å­—å­—ç¬¦
+â€”â€” ans å­—æ¯ã€æ•°å­—å’Œç‰¹æ®Šå­—ç¬¦
+â€”â€” MM æœˆ
+â€”â€” DD æ—¥
+â€”â€” YY å¹´
+â€”â€” hh å°æ—¶
+â€”â€” mm åˆ†
+â€”â€” ss ç§’
+â€”â€” LL å…è®¸çš„æœ€å¤§é•¿åº¦ä¸º99
+â€”â€” LLL å…è®¸çš„æœ€å¤§é•¿åº¦ä¸º999
+â€”â€” VAR å¯å˜é•¿åº¦åŸŸ
+â€”â€” b æ•°æ®çš„äºŒè¿›åˆ¶è¡¨ç¤ºï¼Œåè·Ÿæ•°å­—è¡¨ç¤ºä½ï¼ˆbitï¼‰çš„ä¸ªæ•°
+â€”â€” B ç”¨äºè¡¨ç¤ºå˜é•¿çš„äºŒè¿›åˆ¶æ•°ï¼Œåè·Ÿæ•°å­—è¡¨ç¤ºäºŒè¿›åˆ¶æ•°æ®æ‰€å å­—èŠ‚ï¼ˆByteï¼‰çš„ä¸ªæ•°
+â€”â€” z æŒ‰GB/T 15120å’ŒGB/T 17552çš„2ã€3ç£é“ç¼–ç 
+â€”â€” cn BCDå‹ç¼©ç¼–ç æ•°å€¼
     ]]
 
-  -- ÎïÀí´æ´¢×Ö½ÚÊı£¬×ª»»³É×Ö·û´®ºóµÄ×Ö·ûÊı£¬eBitmapType£¬ÄÚÈİ
+  -- ç‰©ç†å­˜å‚¨å­—èŠ‚æ•°ï¼Œè½¬æ¢æˆå­—ç¬¦ä¸²åçš„å­—ç¬¦æ•°ï¼ŒeBitmapTypeï¼Œå†…å®¹
   local result = {[1]=0, [2]=0, [3]=eBitmapType.Unknow, [4]=""}
 
   if not rule then
@@ -413,7 +434,7 @@ local function MyCalcBitmapPostLen(buf, rule, postion)
   if string.len(rule)==0 then
     return result
   end
-  -- ×ª³É´óĞ´
+  -- è½¬æˆå¤§å†™
   rule = string.upper(rule)
 
   -- LLVAR
@@ -617,9 +638,9 @@ local function MyCalcBitmapPostLen(buf, rule, postion)
 end
 
 ----------------------------------------------------------------------------
--- ¼ÆËãbitmapÖĞÄ³¸ö¿ØÖÆÎ»¶ÔÓ¦µÄÓòÊı¾İµÄÎïÀíbytes offset£¨Ïà¶ÔÓÚÓòÊı¾İ²¿·Ö£¬¿ØÖÆÎ»Ö®ºóµÄÊı¾İ²¿·Ö£©
--- mapBitmap  : °üº¬Ã¿¸öÓòµÄ³¤¶ÈµÄtable
--- postion    : ÓòĞòºÅ£¨1-128£©
+-- è®¡ç®—bitmapä¸­æŸä¸ªæ§åˆ¶ä½å¯¹åº”çš„åŸŸæ•°æ®çš„ç‰©ç†bytes offsetï¼ˆç›¸å¯¹äºåŸŸæ•°æ®éƒ¨åˆ†ï¼Œæ§åˆ¶ä½ä¹‹åçš„æ•°æ®éƒ¨åˆ†ï¼‰
+-- mapBitmap  : åŒ…å«æ¯ä¸ªåŸŸçš„é•¿åº¦çš„table
+-- postion    : åŸŸåºå·ï¼ˆ1-128ï¼‰
 ----------------------------------------------------------------------------
 local function MyCalcBitmapPosOffset(mapBitmap, postion)
   -- [[MyCalcBitmapPosOffset Start]]
@@ -640,8 +661,8 @@ local function MyCalcBitmapPosOffset(mapBitmap, postion)
 end
 
 ----------------------------------------------------------------------------
--- ¼ÆËãbitmapÖĞÄ³¸ö¿ØÖÆÎ»¶ÔÓ¦µÄÓòÊı¾İµÄoffset£¨Ïà¶ÔÓÚÓòÊı¾İ²¿·Ö£¬¿ØÖÆÎ»Ö®ºóµÄÊı¾İ²¿·Ö£©
--- mapBitmapItem  : mapBitmap ÖĞµÄµÚ£¨offsetPos+postion£© ¸öÓò
+-- è®¡ç®—bitmapä¸­æŸä¸ªæ§åˆ¶ä½å¯¹åº”çš„åŸŸæ•°æ®çš„offsetï¼ˆç›¸å¯¹äºåŸŸæ•°æ®éƒ¨åˆ†ï¼Œæ§åˆ¶ä½ä¹‹åçš„æ•°æ®éƒ¨åˆ†ï¼‰
+-- mapBitmapItem  : mapBitmap ä¸­çš„ç¬¬ï¼ˆoffsetPos+postionï¼‰ ä¸ªåŸŸ
 ----------------------------------------------------------------------------
 local function  MyGetBitmapPosValue(mapBitmapItem)
   -- [[MyGetBitmapPosValue Start]]
@@ -662,8 +683,8 @@ local function  MyGetBitmapPosValue(mapBitmapItem)
 end
 
 ----------------------------------------------------------------------------
--- TODO ¸ù¾İAppData»ñÈ¡ÏûÏ¢ÀàĞÍ£ºÏû·Ñ£¬³åÕıµÈµÈ
--- messageType: AppData(0800/0810¡¢0820/0821)
+-- TODO æ ¹æ®AppDataè·å–æ¶ˆæ¯ç±»å‹ï¼šæ¶ˆè´¹ï¼Œå†²æ­£ç­‰ç­‰
+-- messageType: AppData(0800/0810ã€0820/0821)
 ----------------------------------------------------------------------------
 local function MyGetMessageType(messageType)
   -- [[MyGetMessageType Start]]
@@ -686,10 +707,10 @@ local function MyGetMessageType(messageType)
 end
 
 ----------------------------------------------------------------------------
--- Ìí¼ÓÎ»Í¼¿ØÖÆºÍÊı¾İ²¿·Ö
--- buf_src:   Æğµãbuf
--- tree:      Î»Í¼Êı¾İÊ÷
--- offsetPos: ¶ÔÓ¦bitmapTableÖĞµÄÎ»Í¼Æ«ÒÆÁ¿
+-- æ·»åŠ ä½å›¾æ§åˆ¶å’Œæ•°æ®éƒ¨åˆ†
+-- buf_src:   èµ·ç‚¹buf
+-- tree:      ä½å›¾æ•°æ®æ ‘
+-- offsetPos: å¯¹åº”bitmapTableä¸­çš„ä½å›¾åç§»é‡
 ----------------------------------------------------------------------------
 local function processBitmap(buf_src, tree, offsetPos)
   -- [[processBitmap Start]]
@@ -698,32 +719,32 @@ local function processBitmap(buf_src, tree, offsetPos)
   logDebug("================== Process Start ==================")
   logDebug(TAG.."Process Buf = "..MyHex2BCD(buf))
   local lenData = 0
-  -- ¶şÎ¬Êı×é1Î¬£º1-128£¬¶şÎ¬£ºÎïÀí´æ´¢×Ö½ÚÊı£¬×ª»»³É×Ö·û´®ºóµÄ×Ö·ûÊı£¬eBitmapType£¬ÄÚÈİ
-  -- ÀıÈç: {4, 8, N8, ***}
+  -- äºŒç»´æ•°ç»„1ç»´ï¼š1-128ï¼ŒäºŒç»´ï¼šç‰©ç†å­˜å‚¨å­—èŠ‚æ•°ï¼Œè½¬æ¢æˆå­—ç¬¦ä¸²åçš„å­—ç¬¦æ•°ï¼ŒeBitmapTypeï¼Œå†…å®¹
+  -- ä¾‹å¦‚: {4, 8, N8, ***}
   local mapBitmap = {}
   local bitmapIndexMin = 1
   local bitmapIndexMax = 64
   local bitmapIndexBytesLen = 8
   local bitmapIndexCount = 0
 
-  -- ¼ì²éÊÇ·ñÒªÀ©Õ¹64Óòµ½128Óò
+  -- æ£€æŸ¥æ˜¯å¦è¦æ‰©å±•64åŸŸåˆ°128åŸŸ
   if buf(0, 1):bitfield(0, 1)==1 then
     bitmapIndexMax = 128
     bitmapIndexBytesLen = 16
   end
 
-  -- ÕûÀíBitmapÊı¾İ
+  -- æ•´ç†Bitmapæ•°æ®
   local sb = ""
   local offset = 0
   local bufItem
   for i = 1, bitmapIndexBytesLen, 1 do
     for j = 1, 8, 1 do
-      -- ÓòË÷Òı£º1-128
+      -- åŸŸç´¢å¼•ï¼š1-128
       local bitmapIndex = (i-1)*8+j
 
       if i==1 and j==1 then
         logDebug(TAG.."New Bitmap Index>>>>>>>>>>")
-        -- Ä£¿é£º¼ÆËãÓò1
+        -- æ¨¡å—ï¼šè®¡ç®—åŸŸ1
         do
           offset = 0
           bufItem = buf(offset, bitmapIndexBytesLen)
@@ -736,7 +757,7 @@ local function processBitmap(buf_src, tree, offsetPos)
           logDebug(TAG.."Bitmap Current Index(1-128) = "..bitmapIndex..", offset = "..offset..", buf("..mapBitmap[bitmapIndex][1]..") = "..MyHex2BCD(bufItem))
         end
 
-        -- Ä£¿é£º½«ÓòÌí¼Óµ½GUI
+        -- æ¨¡å—ï¼šå°†åŸŸæ·»åŠ åˆ°GUI
         do
           local mapBitmapDefine = eSettings.mapBitmap[0]
 
@@ -759,7 +780,7 @@ local function processBitmap(buf_src, tree, offsetPos)
 
         if v==1 then
           logDebug(TAG.."New Bitmap Index>>>>>>>>>>")
-          -- Ä£¿é£º¼ÆËã´æÔÚµÄÓò¸öÊı
+          -- æ¨¡å—ï¼šè®¡ç®—å­˜åœ¨çš„åŸŸä¸ªæ•°
           do
             if string.len(sb)>0 then
               sb = sb.." "
@@ -768,16 +789,16 @@ local function processBitmap(buf_src, tree, offsetPos)
             bitmapIndexCount = bitmapIndexCount+1
           end
 
-          -- Ä£¿é£º¼ÆËãÓò1+
+          -- æ¨¡å—ï¼šè®¡ç®—åŸŸ1+
           do
-            -- ¼ÆËãÓòµÄÆ«ÒÆÁ¿
+            -- è®¡ç®—åŸŸçš„åç§»é‡
             offset = MyCalcBitmapPosOffset(mapBitmap, bitmapIndex)
 
             if offset>buf:len() then
               logError(TAG.."Bitmap calc error, bitmapIndex = "..bitmapIndex)
               return
             end
-            -- ¼ÆËãÓòµÄÖµ
+            -- è®¡ç®—åŸŸçš„å€¼
             local rule = nil
 
             if eSettings.mapBitmap[bitmapIndex] then
@@ -789,7 +810,7 @@ local function processBitmap(buf_src, tree, offsetPos)
             lenData = lenData + mapBitmap[bitmapIndex][1]
           end
 
-          -- Ä£¿é£º½«ÓòÌí¼Óµ½GUI
+          -- æ¨¡å—ï¼šå°†åŸŸæ·»åŠ åˆ°GUI
           do
             local mapBitmapDefine = nil
 
@@ -813,24 +834,24 @@ local function processBitmap(buf_src, tree, offsetPos)
       end
     end
   end
-  logDebug(TAG.."itmapIndexCount(1-128£º"..sb..") = "..bitmapIndexCount)
+  logDebug(TAG.."itmapIndexCount(1-128ï¼š"..sb..") = "..bitmapIndexCount)
   -- [[processBitmap End]]
 end
 
 ----------------------------------------------------------------------------
--- ·ÖÎöÆ÷
+-- åˆ†æå™¨
 -- Buf(0,2):bitfield(0,2)
 ----------------------------------------------------------------------------
 function proto.dissector(buf, pktInfo, tree)
   -- [[dissector Start]]
   local TAG = "dissector: "
-  -- ²»ÄÜĞ¡ÓÚ´Ó¿ªÊ¼µ½Î»Í¼¿ØÖÆÆ÷µÄ×îĞ¡³¤¶ÈĞèÇó
+  -- ä¸èƒ½å°äºä»å¼€å§‹åˆ°ä½å›¾æ§åˆ¶å™¨çš„æœ€å°é•¿åº¦éœ€æ±‚
   if buf:len() < 34 then
     data_dis:call(buf, pktInfo, tree)
     return
   end
 
-  -- ×Ö½Ú²Ù×÷£ºbuf(offset, len)
+  -- å­—èŠ‚æ“ä½œï¼šbuf(offset, len)
   local totalLen = 2 + tonumber(string.format("%d",buf(0, 2):uint()), 10)
   local subTree, subBuf
 
@@ -842,7 +863,7 @@ function proto.dissector(buf, pktInfo, tree)
     tree = tree:add(proto, buf(), "ISO8583 Response")
   end
 
-  -- ±¨ÎÄÍ· 2bytes
+  -- æŠ¥æ–‡å¤´ 2bytes
   tree:add(buf(0, 2), string.format("Length: 2 bytes, %d", buf(0, 2):uint()))
 
   -- TPDU 5bytes
@@ -866,7 +887,7 @@ function proto.dissector(buf, pktInfo, tree)
   end
 
   subTree = tree:add(buf(13), string.format("ISO8583 Bitmap: %d bytes", buf(13):len()))
-  -- Ó¦ÓÃÊı¾İ
+  -- åº”ç”¨æ•°æ®
   subBuf = buf(13)
   local messageType = MyHex2BCD(subBuf(0, 2):bytes())
   local info = string.format("App Data: 2 bytes, (%s), %s", MyGetMessageType(messageType), messageType)
@@ -881,7 +902,7 @@ end
 
 function proto.init()
   -- [[init Start]]
-  -- Ìí¼Ó±¾Ğ­Òé
+  -- æ·»åŠ æœ¬åè®®
   local tabTcp = DissectorTable.get("tcp.port")
 
   for i=1, #eSettings.port do
@@ -891,6 +912,3 @@ function proto.init()
 end
 -- [[process End]]
 
-
-```
-wireshark plugin iso8583 lua
