@@ -8,11 +8,11 @@ dofile("C:/.../lua/Iso8583.lua")
 
 协议名：iso8583
 
-![设置](./images/setting.jpeg "设置")
+![设置](https://raw.githubusercontent.com/ALandmark/Wireshark-8583-plugin/master/images/setting.jpeg "设置")
 ![报文记录](./images/wireshark_ls.jpeg "报文记录")
-![64域](./images/wireshark_field_64.jpeg "64域")
-![128域](./images/wireshark_field_128.jpeg "128域")
-![支持日志调试](./images/debug.jpeg "支持日志调试")
+![64域](https://raw.githubusercontent.com/ALandmark/Wireshark-8583-plugin/master/images/wireshark_field_64.jpeg "64域")
+![128域](https://raw.githubusercontent.com/ALandmark/Wireshark-8583-plugin/master/images/wireshark_field_128.jpeg "128域")
+![支持日志调试](https://raw.githubusercontent.com/ALandmark/Wireshark-8583-plugin/master/images/debug.jpeg "支持日志调试")
 
 实现代码
 
